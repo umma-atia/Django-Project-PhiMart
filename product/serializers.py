@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from decimal import Decimal
-from product.models import Category, Product, Review
+from product.models import Category, Product, Review, ProductImage
 from django.contrib.auth import get_user_model
 
 
@@ -34,11 +34,20 @@ class CategorySerializer(serializers.ModelSerializer):
 #         return round(product.price * Decimal(1.1), 2)
 
 
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image']
+
+
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'price',
-                  'stock', 'category', 'price_with_tax']  # other
+                  'stock', 'category', 'price_with_tax', 'images']  # other
 
     price_with_tax = serializers.SerializerMethodField(
         method_name='calculate_tax')
@@ -51,15 +60,6 @@ class ProductSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Price could not be negative')
         return price
 
-    # def create(self, validated_data):
-    #     product = Product(**validated_data)
-    #     product.other = 1
-    #     product.save()
-    #     return product
-
-    # def validate(self, attrs):
-    #     if attrs['password1'] != attrs['password2']:
-    #         raise serializers.ValidationError("Password didn't pass")
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
